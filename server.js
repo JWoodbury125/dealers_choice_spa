@@ -1,9 +1,10 @@
 const express = require('express')
 const app = express()
+const path = require('path')
 
 const { db, Team, Division, syncAndSeed } = require('./db')
 
-app.get('/', (req, res) => res.redirect('/divisions'))
+app.get('/', (req, res, next) => res.sendFile(path.join(__dirname, 'index.html')))
 
 app.get('/divisions', async (req, res, next) => {
     try{
@@ -45,9 +46,15 @@ app.get('/divisions/teams/:teamId', async (req, res, next) => {
 })
 
 const init = async (req, res, next) => {
-    await syncAndSeed()
-    console.log('Connected to database')
+    try{
+        await syncAndSeed()
+        console.log('Connected to database')
+        const PORT = process.env.PORT || 3000
+        app.listen(PORT, () => console.log('listening on PORT ', PORT))
+    }
+    catch(ex){
+        next(ex)
+    }
 }
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log('listening on PORT ', PORT))
+init()
